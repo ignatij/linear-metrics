@@ -2,15 +2,24 @@
   "name": "linear-metrics",
   "type": "module",
   "scripts": {
-    "analyze": "tsx scripts/linear-metrics.ts linear-export.csv"
+    "analyze": "tsx src/index.ts linear-export.csv",
+    "save": "tsx src/save_metrics.ts linear-export.csv",
+    "analytics": "tsx src/analytics.ts"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.10.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@types/sql.js": "^1.4.9",
+    "better-sqlite3": "^12.4.1",
     "csv-parse": "^6.1.0",
-    "dayjs": "^1.11.19"
+    "dayjs": "^1.11.19",
+    "sql.js": "^1.13.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "sqlite3-wasm": "^0.0.1"
   }
 }
