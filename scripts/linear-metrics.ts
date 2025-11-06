@@ -5,6 +5,18 @@ import duration from "dayjs/plugin/duration.js";
 
 dayjs.extend(duration);
 
+type LinearIssue = {
+  title: string;
+  assignee: string;
+  team: string;
+  state: string;
+  created: string;
+  started: string;
+  completed: string;
+  durationHours: number;
+  inProgress: boolean;
+};
+
 const CSV_PATH = process.argv[2] || "linear-export.csv";
 
 function calculateWorkingHours(start: dayjs.Dayjs, end: dayjs.Dayjs) {
@@ -73,6 +85,32 @@ function formatWorkingHoursToDays(hours: number) {
   return `${days}d ${leftoverHours.toFixed(2)}h`;
 }
 
+// Time from when work starts (started) to when it’s completed (completed).
+function calculateCycleTime(issue: LinearIssue): number {
+  if (!issue.started || !issue.completed) return 0;
+  const start = dayjs(issue.started);
+  const end = dayjs(issue.completed);
+  return end.diff(start, "hour", true); // hours (fractional)
+}
+
+// Time from when the issue was created (or first entered your workflow) to when it was completed
+function calculateLeadTime(issue: LinearIssue): number {
+  if (!issue.created || !issue.completed) return 0;
+  const start = dayjs(issue.created);
+  const end = dayjs(issue.completed);
+  return end.diff(start, "hour", true); // hours (fractional)
+}
+
+function averageCycleTime(issues: LinearIssue[]): number {
+  const times = issues.map(calculateCycleTime).filter((h) => h > 0);
+  return times.length ? times.reduce((a, b) => a + b, 0) / times.length : 0;
+}
+
+function averageLeadTime(issues: LinearIssue[]): number {
+  const times = issues.map(calculateLeadTime).filter((h) => h > 0);
+  return times.length ? times.reduce((a, b) => a + b, 0) / times.length : 0;
+}
+
 function main() {
   const csvContent = fs.readFileSync(CSV_PATH, "utf-8");
 
@@ -97,33 +135,22 @@ function main() {
         completed = dayjs(r["Completed"]);
       } else {
         return null;
-        // completed = dayjs();
-        // inProgress = true;
       }
 
       const hours = calculateWorkingHours(started, completed);
-      console.log(r["Title"], r["Started"], r["Completed"], hours);
       return {
         title: r["Title"] || "(No title)",
         assignee: r["Assignee"] || "Unassigned",
         team: r["Team"] || "",
         state: r["State"] || "",
+        created: r["Created"] || "",
         started: started.format("YYYY-MM-DD"),
         completed: completed.format("YYYY-MM-DD"),
         durationHours: hours,
         inProgress: inProgress,
       };
     })
-    .filter(Boolean) as {
-    title: string;
-    assignee: string;
-    team: string;
-    state: string;
-    started: string;
-    completed: string;
-    durationHours: number;
-    inProgress: boolean;
-  }[];
+    .filter(Boolean) as LinearIssue[];
 
   if (tickets.length === 0) {
     console.log("No completed tickets found.");
@@ -135,19 +162,23 @@ function main() {
   const avg = total / tickets.length;
   const sorted = [...tickets].sort((a, b) => a.durationHours - b.durationHours);
   const median = sorted[Math.floor(sorted.length / 2)].durationHours;
+  const leadTime = averageLeadTime(tickets);
+  const cycleTime = averageCycleTime(tickets);
 
   // Print summary
   console.log("📊 Linear Metrics Summary");
   console.log("------------------------");
-  console.log(`Tickets solved: ${tickets.length}h`);
+  console.log(`Tickets solved: ${tickets.length}`);
   console.log(`Average resolution time: ${avg.toFixed(2)}h`);
   console.log(`Median resolution time: ${median.toFixed(2)}h`);
   console.log(
-    `Shortest: ${sorted[0].durationHours.toFixed(2)}h | Longest: ${sorted.at(-1)!.durationHours.toFixed(2)}h\n`,
+    `Shortest: ${sorted[0].durationHours.toFixed(2)}h | Longest: ${sorted.at(-1)!.durationHours.toFixed(2)}h`,
   );
+  console.log(`Average Lead Time: ${leadTime.toFixed(2)}h`);
+  console.log(`Average Cycle Time: ${cycleTime.toFixed(2)}h`);
 
   // Rank by duration (descending)
-  console.log(` Longest Tickets ⏱️`);
+  console.log(`\n Longest Tickets ⏱️`);
   console.log("------------------------");
   const ranked = [...tickets].sort((a, b) => b.durationHours - a.durationHours);
 
