@@ -77,7 +77,7 @@ export function calculateCycleTime(issue: LinearIssue): number {
   if (!issue.started || !issue.completed) return 0;
   const start = dayjs(issue.started);
   const end = dayjs(issue.completed);
-  return end.diff(start, "hour", true); // hours (fractional)
+  return calculateWorkingHours(start, end);
 }
 
 // Time from when the issue was created (or first entered your workflow) to when it was completed
@@ -85,7 +85,7 @@ export function calculateLeadTime(issue: LinearIssue): number {
   if (!issue.created || !issue.completed) return 0;
   const start = dayjs(issue.created);
   const end = dayjs(issue.completed);
-  return end.diff(start, "hour", true); // hours (fractional)
+  return calculateWorkingHours(start, end);
 }
 
 export function averageCycleTime(issues: LinearIssue[]): number {
@@ -103,8 +103,8 @@ export function computeMetrics(issue: LinearIssue): LinearIssueMetrics {
   const started = dayjs(issue.started);
   const completed = dayjs(issue.completed);
 
-  const cycleTimeHours = completed.diff(started, "hour", true);
-  const leadTimeHours = completed.diff(created, "hour", true);
+  const cycleTimeHours = calculateWorkingHours(started, completed);
+  const leadTimeHours = calculateWorkingHours(created, completed);
 
   const month = completed.format("YYYY-MM");
 

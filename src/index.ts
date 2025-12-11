@@ -28,19 +28,27 @@ function main() {
   const cycleTime = averageCycleTime(tickets);
 
   // Print summary
-  console.log("📊 Linear Metrics Summary");
+  console.log("## Linear Metrics Summary 📊");
+  console.log();
   console.log("------------------------");
+  console.log();
   console.log(`Tickets solved: ${tickets.length}`);
+  console.log();
   console.log(`Average resolution time: ${avg.toFixed(2)}h`);
+  console.log();
   console.log(`Median resolution time: ${median.toFixed(2)}h`);
+  console.log();
   console.log(
     `Shortest: ${sorted[0].durationHours.toFixed(2)}h | Longest: ${sorted.at(-1)!.durationHours.toFixed(2)}h`,
   );
+  console.log();
   console.log(`Average Lead Time: ${leadTime.toFixed(2)}h`);
+  console.log();
   console.log(`Average Cycle Time: ${cycleTime.toFixed(2)}h`);
+  console.log();
 
   // Rank by duration (descending)
-  console.log(`\n Longest Tickets ⏱️`);
+  console.log(`\n## Tickets Done 📃`);
   console.log("------------------------");
   const ranked = [...tickets].sort((a, b) => b.durationHours - a.durationHours);
 
@@ -64,7 +72,7 @@ function main() {
   entries.sort((a, b) => b[1] - a[1]);
 
   // entries is now sorted by highest count first
-  console.log(`\n Highest Contributors ⭐️`);
+  console.log(`\n## Highest Contributors ⭐️`);
   console.log("------------------------");
   entries.forEach((e, i) => {
     console.log(`${i + 1}. ${e[0]} ${e[1]}`);

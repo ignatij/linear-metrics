@@ -41,8 +41,8 @@ export const load = (csvPath: string): LinearIssue[] => {
         team: r["Team"] || "",
         state: r["State"] || "",
         created: r["Created"] || "",
-        started: started.format("YYYY-MM-DD"),
-        completed: completed.format("YYYY-MM-DD"),
+        started: started.toISOString(),
+        completed: completed.toISOString(),
         durationHours: hours,
         inProgress: inProgress,
       };
